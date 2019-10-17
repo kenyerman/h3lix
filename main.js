@@ -1,10 +1,9 @@
 class Main {
     constructor() {
-        this.Objects = [];
         this.scene = new THREE.Scene();
-
-        this.addCamera();
+        this.scene.fog = new THREE.Fog( 0x000000, 100, 170 );
         this.addRenderer();
+        this.addCamera();
 
         window.addEventListener('resize', () => {
             this.renderer.setSize(window.innerWidth,window.innerHeight);
@@ -12,14 +11,19 @@ class Main {
             
             this.camera.updateProjectionMatrix();
         });
-        // this.addSkybox();
-        this.addLights();
-        this.addObjects();
+        this.addLight();
+        this.addText();
+        for (let i = 0; i < 10; ++i) {
+            this.addHelix();
+        }
     }
 
     addCamera() {
         this.camera = new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,1000)
-        this.camera.position.z = 10;
+        this.camera.position.z = 20;
+        this.controls = new THREE.OrbitControls( this.camera, this.renderer.domElement );
+
+        this.controls.update();
     }
 
     addRenderer() {
@@ -29,29 +33,37 @@ class Main {
         document.body.appendChild(this.renderer.domElement);
     }
 
-    addLights() {
+    addLight() {
         let light = new THREE.PointLight(0xFFFFFF, 1, 1000)
         light.position.set(0,0,10);
         this.scene.add(light);
 
-        // light = new THREE.AmbientLight(0xFFFFFF, 0.5, 1000)
-        // light.position.set(0,0,25);
-        // this.scene.add(light);
+        light = new THREE.PointLight(0xFF0000, 0.4, 1000)
+        light.position.set(0,0,-100);
+        this.scene.add(light);
+
+        light = new THREE.PointLight(0xFFFFFF, 1, 1000)
+        light.position.set(0,0,30);
+        this.scene.add(light);
     }
 
-    addSkybox() {
-        let texture = new THREE.TextureLoader().load( "skybox2.jpg" );
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        // texture.repeat.set( 4, 4 );
+    addHelix() {
+        const h = new Helix(this.scene, ()=>{this.addHelix();});
 
-        this.scene.background = texture;
+        const x = ((2 * Math.random()) - 1) * 100;
+        const y = ((2 * Math.random()) - 1) * 50;
+        const z = -150 + (((2 * Math.random()) - 1) * 150);
+        h.group.position.set(x, y, z);
+
+        h.group.rotation.x = -(Math.random() * Math.PI);
+        h.group.rotation.y = -(Math.random() * Math.PI);
+        h.group.rotation.z = -(Math.random() * Math.PI);
     }
 
-
-    addObjects() {
-        const h = new Helix(this.scene);
-        this.Objects.push(h);
+    addText() {
+        new Text((mesh)=>{
+            this.scene.add(mesh);
+        });
     }
 }
 
@@ -61,3 +73,4 @@ var render = function () {
     m.renderer.render(m.scene, m.camera);
 }
 render();
+
